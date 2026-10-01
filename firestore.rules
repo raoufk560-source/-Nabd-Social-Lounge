@@ -1,0 +1,122 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return (isSignedIn() && request.auth.token.email == 'kg9547547@gmail.com' && request.auth.token.email_verified == true)
+        || (isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
+    }
+
+    match /test/{docId} {
+      allow get: if isValidId(docId);
+    }
+
+    match /users/{userId} {
+      function isValidUser(data) {
+        return data.keys().hasAll(['id', 'username', 'display_name', 'created_at'])
+          && data.id is string && data.id.size() <= 128
+          && data.username is string && data.username.size() >= 3 && data.username.size() <= 32
+          && data.display_name is string && data.display_name.size() >= 2 && data.display_name.size() <= 40
+          && data.created_at is number;
+      }
+
+      allow get: if isValidId(userId) && (isSignedIn() || true);
+      allow list: if resource.data.id is string;
+      allow create: if isValidId(userId) && isValidUser(incoming());
+      allow update: if isValidId(userId) && isValidUser(incoming()) && incoming().id == existing().id;
+    }
+
+    match /reels/{reelId} {
+      function isValidReel(data) {
+        return data.keys().hasAll(['id', 'user_id', 'video_url', 'title', 'created_at'])
+          && data.id is string && data.id.size() <= 128
+          && data.user_id is string && data.user_id.size() <= 128
+          && data.video_url is string && data.video_url.size() >= 1 && data.video_url.size() <= 2048
+          && data.title is string && data.title.size() >= 1 && data.title.size() <= 150
+          && data.created_at is number;
+      }
+
+      allow get: if isValidId(reelId);
+      allow list: if resource.data.id is string;
+      allow create: if isValidId(reelId) && isValidReel(incoming());
+      allow update: if isValidId(reelId) && isValidReel(incoming()) && incoming().id == existing().id;
+      allow delete: if isValidId(reelId) && (isSignedIn() || isAdmin());
+    }
+
+    match /follows/{followId} {
+      function isValidFollow(data) {
+        return data.keys().hasAll(['follower_id', 'following_id', 'created_at'])
+          && data.follower_id is string && data.follower_id.size() <= 128
+          && data.following_id is string && data.following_id.size() <= 128
+          && data.created_at is number;
+      }
+
+      allow get: if isValidId(followId);
+      allow list: if resource.data.follower_id is string;
+      allow create, update: if isValidId(followId) && isValidFollow(incoming());
+      allow delete: if isValidId(followId);
+    }
+
+    match /private_messages/{messageId} {
+      function isValidPrivateMessage(data) {
+        return data.keys().hasAll(['id', 'sender_id', 'receiver_id', 'created_at'])
+          && data.id is string && data.id.size() <= 128
+          && data.sender_id is string && data.sender_id.size() <= 128
+          && data.receiver_id is string && data.receiver_id.size() <= 128
+          && data.created_at is number;
+      }
+
+      allow get: if isValidId(messageId);
+      allow list: if resource.data.id is string;
+      allow create, update: if isValidId(messageId) && isValidPrivateMessage(incoming());
+    }
+
+    match /wall_posts/{postId} {
+      function isValidWallPost(data) {
+        return data.keys().hasAll(['id', 'user_id', 'created_at'])
+          && data.id is string && data.id.size() <= 128
+          && data.user_id is string && data.user_id.size() <= 128
+          && data.created_at is number;
+      }
+
+      allow get: if isValidId(postId);
+      allow list: if resource.data.id is string;
+      allow create, update: if isValidId(postId) && isValidWallPost(incoming());
+      allow delete: if isValidId(postId);
+    }
+
+    match /nabd_cloud_backup/{chunkId} {
+      function isValidChunk(data) {
+        return data.keys().hasAll(['chunkIndex', 'totalChunks', 'dataBase64', 'updatedAt'])
+          && data.chunkIndex is number
+          && data.totalChunks is number
+          && data.dataBase64 is string && data.dataBase64.size() <= 950000
+          && data.updatedAt is number;
+      }
+
+      allow get: if isValidId(chunkId);
+      allow list: if resource.data.updatedAt is number;
+      allow create, update: if isValidId(chunkId) && isValidChunk(incoming());
+      allow delete: if isValidId(chunkId);
+    }
+  }
+}

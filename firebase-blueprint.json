@@ -1,0 +1,123 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User account profile, level, wallet, and privacy settings",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "username": { "type": "string", "minLength": 3, "maxLength": 32 },
+        "display_name": { "type": "string", "minLength": 2, "maxLength": 40 },
+        "avatar_url": { "type": "string", "maxLength": 1024 },
+        "banner_url": { "type": "string", "maxLength": 1024 },
+        "bio": { "type": "string", "maxLength": 400 },
+        "country": { "type": "string", "maxLength": 60 },
+        "gender": { "type": "string", "enum": ["male", "female"] },
+        "role": { "type": "string", "maxLength": 32 },
+        "xp": { "type": "number" },
+        "level": { "type": "number" },
+        "gold": { "type": "number" },
+        "gems": { "type": "number" },
+        "created_at": { "type": "number" }
+      },
+      "required": ["id", "username", "display_name", "created_at"]
+    },
+    "Reel": {
+      "title": "Reel",
+      "description": "Short vertical video reel uploaded by a user",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "user_id": { "type": "string", "maxLength": 128 },
+        "video_url": { "type": "string", "maxLength": 2048 },
+        "title": { "type": "string", "minLength": 1, "maxLength": 150 },
+        "description": { "type": "string", "maxLength": 500 },
+        "likes_count": { "type": "number" },
+        "comments_count": { "type": "number" },
+        "views_count": { "type": "number" },
+        "created_at": { "type": "number" }
+      },
+      "required": ["id", "user_id", "video_url", "title", "created_at"]
+    },
+    "Follow": {
+      "title": "Follow",
+      "description": "Follower / Following relationship between two users",
+      "type": "object",
+      "properties": {
+        "follower_id": { "type": "string", "maxLength": 128 },
+        "following_id": { "type": "string", "maxLength": 128 },
+        "created_at": { "type": "number" }
+      },
+      "required": ["follower_id", "following_id", "created_at"]
+    },
+    "PrivateMessage": {
+      "title": "PrivateMessage",
+      "description": "Permanent 1-on-1 private message between two users",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "sender_id": { "type": "string", "maxLength": 128 },
+        "receiver_id": { "type": "string", "maxLength": 128 },
+        "content": { "type": "string", "maxLength": 2000 },
+        "media_url": { "type": "string", "maxLength": 2048 },
+        "media_type": { "type": "string", "maxLength": 32 },
+        "is_read": { "type": "number" },
+        "created_at": { "type": "number" }
+      },
+      "required": ["id", "sender_id", "receiver_id", "created_at"]
+    },
+    "WallPost": {
+      "title": "WallPost",
+      "description": "Social wall post with text or media",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "user_id": { "type": "string", "maxLength": 128 },
+        "content": { "type": "string", "maxLength": 1000 },
+        "media_url": { "type": "string", "maxLength": 2048 },
+        "likes_count": { "type": "number" },
+        "comments_count": { "type": "number" },
+        "created_at": { "type": "number" }
+      },
+      "required": ["id", "user_id", "created_at"]
+    },
+    "BackupChunk": {
+      "title": "BackupChunk",
+      "description": "Cloud-mirrored database state chunk for instant server recovery",
+      "type": "object",
+      "properties": {
+        "chunkIndex": { "type": "number" },
+        "totalChunks": { "type": "number" },
+        "dataBase64": { "type": "string", "maxLength": 900000 },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["chunkIndex", "totalChunks", "dataBase64", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Persistent user accounts"
+    },
+    "/reels/{reelId}": {
+      "schema": { "$ref": "#/entities/Reel" },
+      "description": "Persistent short video reels"
+    },
+    "/follows/{followId}": {
+      "schema": { "$ref": "#/entities/Follow" },
+      "description": "Follower and following relationships"
+    },
+    "/private_messages/{messageId}": {
+      "schema": { "$ref": "#/entities/PrivateMessage" },
+      "description": "Permanent 1-on-1 private chat messages"
+    },
+    "/wall_posts/{postId}": {
+      "schema": { "$ref": "#/entities/WallPost" },
+      "description": "Persistent social wall posts"
+    },
+    "/nabd_cloud_backup/{chunkId}": {
+      "schema": { "$ref": "#/entities/BackupChunk" },
+      "description": "Cloud database mirror chunks for server restart persistence"
+    }
+  }
+}

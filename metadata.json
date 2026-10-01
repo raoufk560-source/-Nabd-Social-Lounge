@@ -1,0 +1,11 @@
+{
+  "name": "نبض المجالس | Nabd Social Lounge",
+  "description": "منصة اجتماعية عربية متكاملة لغرف الدردشة الصوتية والكتابية، البثوث المباشرة، الريلز، القصص، ونظام التفاعل والمستويات.",
+  "requestFramePermissions": [
+    "microphone",
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
